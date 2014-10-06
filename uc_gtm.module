@@ -178,7 +178,7 @@ function uc_gtm_ecommerce_js($order) {
   
   // Close out the dataLayer array
   $script .= "}]"; // products
-  $script .= "]]"; // entire array
+  $script .= "}]"; // entire array
   
   return $script;
 }
