@@ -115,7 +115,7 @@ function uc_gtm_ecommerce_js($order) {
   );
 
   // Allow modules to alter the transaction arguments.
-  drupal_alter('ucga_trans', $trans, $order);
+  drupal_alter('ucgtm_trans', $trans, $order);
 
   // Put the arguments into an array that is safe to implode directly.
   $args = array(
@@ -129,7 +129,7 @@ function uc_gtm_ecommerce_js($order) {
     drupal_to_js($trans['country']),
   );
   
-  /* TODO: Put the code in here to push the order info. */
+  // TODO: Put the code in here to push the order info.
 
   // Loop through the products on the order.
   foreach ($order->products as $product) {
@@ -183,7 +183,7 @@ function uc_gtm_ecommerce_js($order) {
       '"'. $item['qty'] .'"',
     );
 
-  /* TODO: Add the code to push the line item into GTM. */
-
-  /* TODO: Add the code to push the final transaction into GTM. */
+  // TODO: Add the code to push the product into GTM.
+  }
+  // TODO: Add the code to push the final transaction into GTM.
 }
