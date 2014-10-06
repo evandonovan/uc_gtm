@@ -179,7 +179,7 @@ function uc_gtm_ecommerce_js($order) {
     );
 
     $script .= "'sku': '" . drupal_to_js($item['sku']) . "',";
-    $script .= "'name': '" . drupal_to_js($item['name']) . "',"
+    $script .= "'name': '" . drupal_to_js($item['name']) . "',";
     $script .= "'category': " . drupal_to_js((string) $item['category']) . "',";
     $script .= "'price': " . uc_price($item['price'], $context) . ",";
     $script .= "'quantity':" . $item['qty'] . ",";
