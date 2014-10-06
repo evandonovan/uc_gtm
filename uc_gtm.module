@@ -6,8 +6,6 @@
  * e-commerce statistics tracking through Gogle Tag Manager.
  */
 
-}
-
 /**
  * Implements hook_init().
  * Adds the Google Tag Manager e-commerce tracking code.
