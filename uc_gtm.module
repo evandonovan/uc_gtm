@@ -9,43 +9,44 @@
 }
 
 /**
- * Implements hook_footer().
+ * Implements hook_init().
+ * Adds the Google Tag Manager e-commerce tracking code.
  */
-function uc_googleanalytics_footer($main = 0) {
+function uc_gtm_init($main = 0) {
   // Check to see if we are at the order completion page.
-  if (uc_googleanalytics_display()) {
+  if (uc_gtm_display()) {
     // If so, then if we can load the order...
-    if (!empty($_SESSION['ucga_order_id']) && $order = uc_order_load($_SESSION['ucga_order_id'])) {
-      // Build the GA tracking code.
-      $script = uc_googleanalytics_ecommerce_js($order);
+    if (!empty($_SESSION['ucgtm_order_id']) && $order = uc_order_load($_SESSION['ucgtm_order_id'])) {
+      // Build the GTM tracking code.
+      $script = uc_gtm_ecommerce_js($order);
 
-      // Add the code to the footer.
-      drupal_add_js($script, 'inline', 'footer');
+      // Add the code to the header.
+      drupal_add_js($script, 'inline', 'header');
     }
 
     // Clean out the session variable.
-    unset($_SESSION['ucga_order_id']);
+    unset($_SESSION['ucgtm_order_id']);
   }
 }
 
 /**
  * Implements hook_order().
  */
-function uc_googleanalytics_order($op, $arg1, $arg2) {
+function uc_gtm_order($op, $arg1, $arg2) {
   // If a new order is created during the checkout process...
   if ($op == 'new' && arg(0) == 'cart') {
     // Store the order ID for later use.
-    $_SESSION['ucga_order_id'] = $arg1->order_id;
+    $_SESSION['ucgtm_order_id'] = $arg1->order_id;
   }
 }
 
 /**
- * Determine whether or not to display the e-commerce related JS through GA.
+ * Determine whether or not to display the e-commerce related JS in the GTM data layer.
  *
  * @return
  *   TRUE or FALSE indicating whether or not to display the GA e-commerce JS.
  */
-function uc_googleanalytics_display() {
+function uc_gtm_display() {
   // Display the GA e-commerce JS if the URL is cart/checkout/complete...
   if (arg(0) == 'cart' && arg(1) == 'checkout' && arg(2) == 'complete') {
     return TRUE;
@@ -58,8 +59,8 @@ function uc_googleanalytics_display() {
     return TRUE;
   }
 
-  // Or if another module says this is the page through hook_ucga_display().
-  foreach (module_invoke_all('ucga_display') as $result) {
+  // Or if another module says this is the page through hook_ucgtm_display().
+  foreach (module_invoke_all('ucgtm_display') as $result) {
     if ($result === TRUE) {
       return TRUE;
     }
@@ -70,18 +71,14 @@ function uc_googleanalytics_display() {
 }
 
 /**
- * Build the e-commerce JS passed to Google Analytics for order tracking.
+ * Build the e-commerce JS passed to Google Tag Manager for order tracking.
  *
  * @param $order
- *   The fully loaded order object to convert into GA JS.
+ *   The fully loaded order object to convert into GTM data layer JS.
  * @return
- *   The JS that should be added to the page footer.
+ *   The JS that should be added to the page header.
  */
-function uc_googleanalytics_ecommerce_js($order) {
-  // Support both Google Analytics versions 2.x and 3.x.
-  $script2 = '';
-  $script3 = '';
-
+function uc_gtm_ecommerce_js($order) {
   // Lookup the name of the country or default to the ID if it can't be found
   // for some reason.
   if ($country_data = uc_get_country_data(array('country_id' => $order->billing_country))) {
@@ -133,10 +130,8 @@ function uc_googleanalytics_ecommerce_js($order) {
     drupal_to_js($trans['state']),
     drupal_to_js($trans['country']),
   );
-
-  // Add the transaction line to the JS.
-  $script2 .= 'pageTracker._addTrans('. implode(', ', $args) .');';
-  $script3 .= '_gaq.push(["_addTrans", '. implode(', ', $args) .']);';
+  
+  /* TODO: Put the code in here to push the order info. */
 
   // Loop through the products on the order.
   foreach ($order->products as $product) {
@@ -166,13 +161,13 @@ function uc_googleanalytics_ecommerce_js($order) {
     );
 
     // Allow modules to alter the item arguments.
-    drupal_alter('ucga_item', $item, $product, $trans, $order);
+    drupal_alter('ucgtm_item', $item, $product, $trans, $order);
 
       // Create a context for uc_price
       $context = array(
       'revision' => 'altered',
       'type' => 'order_product',
-      'caller' => 'uc_googleanalytics',
+      'caller' => 'uc_gtm',
       'subject' => array(
          'order_product' => $product,
          'order' => $order,
@@ -190,16 +185,7 @@ function uc_googleanalytics_ecommerce_js($order) {
       '"'. $item['qty'] .'"',
     );
 
-    // Add the item line to the JS.
-    $script2 .= 'pageTracker._addItem('. implode(', ', $args) .');';
-    $script3 .= '_gaq.push(["_addItem", '. implode(', ', $args) .']);';
-  }
+  /* TODO: Add the code to push the line item into GTM. */
 
-  // Add the function to submit the transaction to GA.
-  $script2 .= 'pageTracker._trackTrans();';
-  $script3 .= '_gaq.push(["_trackTrans"]);';
-
-  // Google Analytics 3.x starts with schema version 6300.
-  $version = db_result(db_query("SELECT schema_version FROM {system} WHERE type = 'module' AND name = 'googleanalytics'"));
-  return $version >= 6300 ? $script3 : $script2;
+  /* TODO: Add the code to push the final transaction into GTM. */
 }
