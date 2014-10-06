@@ -173,7 +173,8 @@ function uc_gtm_ecommerce_js($order) {
     $script .= "'name': '" . drupal_to_js($item['name']) . "',";
     $script .= "'category': " . drupal_to_js((string) $item['category']) . "',";
     $script .= "'price': " . uc_price($item['price'], $context) . ",";
-    $script .= "'quantity':" . $item['qty'] . ",";
+    $script .= "'quantity':" . $item['qty']";
+    // TODO: Get this to work properly for single items and multiple items
   }
   
   // Close out the dataLayer array
