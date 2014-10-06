@@ -116,20 +116,15 @@ function uc_gtm_ecommerce_js($order) {
 
   // Allow modules to alter the transaction arguments.
   drupal_alter('ucgtm_trans', $trans, $order);
-
-  // Put the arguments into an array that is safe to implode directly.
-  $args = array(
-    '"'. $trans['order_id'] .'"',
-    drupal_to_js($trans['store']),
-    '"'. $trans['total'] .'"',
-    '"'. $trans['tax'] .'"',
-    '"'. $trans['shipping'] .'"',
-    drupal_to_js($trans['city']),
-    drupal_to_js($trans['state']),
-    drupal_to_js($trans['country']),
-  );
   
-  // TODO: Put the code in here to push the order info.
+  // Build code to push the order info.
+  $script .= "dataLayer = [{";
+  $script .= "'transactionId': '" . $trans['order_id'] . "',";
+  $script .= "'transactionAffiliation': '" . drupal_to_js($trans['store']) . "',";
+  $script .= "'transactionTotal': " . $trans['total'] . ",";
+  $script .= "'transactionTax': " . $trans['tax'] . ",";
+  $script .= "'transactionShipping': " . $trans['shipping'] . ",";
+  $script .= "'transactionProducts': [{";
 
   // Loop through the products on the order.
   foreach ($order->products as $product) {
@@ -183,7 +178,16 @@ function uc_gtm_ecommerce_js($order) {
       '"'. $item['qty'] .'"',
     );
 
-  // TODO: Add the code to push the product into GTM.
+    $script .= "'sku': '" . drupal_to_js($item['sku']) . "',";
+    $script .= "'name': '" . drupal_to_js($item['name']) . "',"
+    $script .= "'category': " . drupal_to_js((string) $item['category']) . "',";
+    $script .= "'price': " . uc_price($item['price'], $context) . ",";
+    $script .= "'quantity':" . $item['qty'] . ",";
   }
-  // TODO: Add the code to push the final transaction into GTM.
+  
+  // Close out the dataLayer array
+  $script .= "}]"; // products
+  $script .= "]]"; // entire array
+  
+  return $script;
 }
